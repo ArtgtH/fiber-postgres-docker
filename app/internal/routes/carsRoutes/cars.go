@@ -9,7 +9,7 @@ import (
 func SetupCarsRoutes(router fiber.Router) {
 	note := router.Group("/cars")
 
-	note.Post("/", carsHandler.CreateCars)
+	note.Post("/", carsHandler.CreateCar)
 
 	note.Get("/", carsHandler.GetCars)
 

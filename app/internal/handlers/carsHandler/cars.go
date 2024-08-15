@@ -14,92 +14,123 @@ func GetCars(c *fiber.Ctx) error {
 	db.Find(&cars)
 
 	if len(cars) == 0 {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No cars present", "data": nil})
+		return c.Status(404).JSON(fiber.Map{"data": "No cars present"})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Notes Found", "data": cars})
+	var res []CarResponse
+	for _, car := range cars {
+		res = append(res, CarResponse{
+			ID:        car.ID,
+			ModelName: car.ModelName,
+			Price:     car.Price,
+			Country:   car.Country,
+			Producer:  car.Producer,
+			Date:      car.Date,
+		})
+	}
+	return c.Status(200).JSON(fiber.Map{"data": res})
 }
 
-func CreateCars(c *fiber.Ctx) error {
+func CreateCar(c *fiber.Ctx) error {
 	db := database.DB
-	car := new(model.Car)
+	carReq := new(CreateCarRequest)
 
-	err := c.BodyParser(&car)
+	err := c.BodyParser(&carReq)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Review your input", "data": err})
+		return c.Status(400).JSON(fiber.Map{"data": "Incorrect input"})
 	}
 
+	car := model.Car{
+		ModelName: carReq.ModelName,
+		Price:     carReq.Price,
+		Country:   carReq.Country,
+		Producer:  carReq.Producer,
+		Date:      carReq.Date,
+	}
 	car.ID = uuid.New()
 	err = db.Create(&car).Error
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create car", "data": err})
+		return c.Status(500).JSON(fiber.Map{"data": err})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Created Car", "data": car})
+	return c.Status(201).JSON(fiber.Map{"data": CarResponse{
+		ID:        car.ID,
+		ModelName: car.ModelName,
+		Price:     car.Price,
+		Country:   car.Country,
+		Producer:  car.Producer,
+		Date:      car.Date,
+	}})
 }
 
 func GetCar(c *fiber.Ctx) error {
 	db := database.DB
 	var car model.Car
-
 	id := c.Params("carId")
 
 	db.Find(&car, "id = ?", id)
 
 	if car.ID == uuid.Nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No car present", "data": nil})
+		return c.Status(404).JSON(fiber.Map{"data": "No car present"})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Car Found", "data": car})
+	return c.Status(200).JSON(fiber.Map{"data": CarResponse{
+		ID:        car.ID,
+		ModelName: car.ModelName,
+		Price:     car.Price,
+		Country:   car.Country,
+		Producer:  car.Producer,
+		Date:      car.Date,
+	}})
 }
 
 func UpdateCar(c *fiber.Ctx) error {
-	type updateCar struct {
-		Price     int64  `json:"price"`
-		ModelName string `json:"model_name"`
-	}
 	db := database.DB
 	var car model.Car
-
 	id := c.Params("carId")
 
 	db.Find(&car, "id = ?", id)
 
 	if car.ID == uuid.Nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No car present", "data": nil})
+		return c.Status(404).JSON(fiber.Map{"data": "No car present"})
 	}
 
-	var updateCarData updateCar
+	var updateCarData UpdateCarRequest
 	err := c.BodyParser(&updateCarData)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Review your input", "data": err})
+		return c.Status(400).JSON(fiber.Map{"data": "Incorrect input"})
 	}
 
 	car.Price = updateCarData.Price
 	car.ModelName = updateCarData.ModelName
-
 	db.Save(&car)
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Car Found", "data": car})
+	return c.Status(200).JSON(fiber.Map{"data": CarResponse{
+		ID:        car.ID,
+		ModelName: car.ModelName,
+		Price:     car.Price,
+		Country:   car.Country,
+		Producer:  car.Producer,
+		Date:      car.Date,
+	}})
 }
 
 func DeleteCar(c *fiber.Ctx) error {
 	db := database.DB
 	var car model.Car
-
 	id := c.Params("carId")
 
 	db.Find(&car, "id = ?", id)
 
 	if car.ID == uuid.Nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No car present", "data": nil})
+		return c.Status(404).JSON(fiber.Map{"data": "No car present"})
 	}
 
 	err := db.Delete(&car, "id = ?", id).Error
 
 	if err != nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Failed to delete car", "data": nil})
+		return c.Status(500).JSON(fiber.Map{"data": "Failed to delete car"})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Deleted car"})
+	return c.Status(200).JSON(fiber.Map{"data": "Deleted car"})
 }
