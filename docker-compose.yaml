@@ -24,16 +24,16 @@ services:
     networks:
       - dev
 
-  nginx:
-    image: nginx:stable-alpine
-    ports:
-      - "80:80"
-    depends_on:
-      - fiber-app
-    volumes:
-      - "./nginx.conf:/etc/nginx/nginx.conf"
-    networks:
-      - dev
+#  nginx:
+#    image: nginx:stable-alpine
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - fiber-app
+#    volumes:
+#      - "./nginx.conf:/etc/nginx/nginx.conf"
+#    networks:
+#      - dev
 
 volumes:
   data:
