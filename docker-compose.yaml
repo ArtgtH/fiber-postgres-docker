@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - dev
 
@@ -21,19 +23,17 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    depends_on:
+      - fiber-app
+    volumes:
+      - "./nginx.conf:/etc/nginx/nginx.conf"
     networks:
       - dev
-
-#  nginx:
-#    image: nginx:stable-alpine
-#    ports:
-#      - "80:80"
-#    depends_on:
-#      - fiber-app
-#    volumes:
-#      - "./nginx.conf:/etc/nginx/nginx.conf"
-#    networks:
-#      - dev
 
 volumes:
   data:
